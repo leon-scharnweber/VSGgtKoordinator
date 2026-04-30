@@ -1,0 +1,22 @@
+@startuml
+hide empty description
+state Start {
+	Start : registriert sich\n beim Erlang-Node und\n beim Namensdienst
+}
+state Init {
+	Init : nimmt ggt-Prozessregistrung an
+}
+state Bereit {
+	Bereit : ggt-Berechnung kann starten
+}
+state Beenden {
+	Beenden : Beenden alle gtt-Prozesse und meldet sich ap
+}
+[*] -> Start : Koordinator wird gestartet
+Start -> Init
+Init -> Bereit : step Befehl
+Bereit -> Init : reset Befehl
+Init -down-> Beenden : kill Befehl
+Bereit -down-> Beenden : kill Befehl
+Beenden --> [*]
+@enduml

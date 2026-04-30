@@ -1,0 +1,7 @@
+@startuml
+title Starter fordert Steuer Werte für gtt-Prozess Erzeugun an
+start
+note: Auslöser:\n Sequnenzdiagramm StarterSteuerwerteAnfragen
+:sendet Steuer Werte(Anzahl an gtt-Prozessen, Arbeitszeit, Terminierungszeit);
+end
+@enduml

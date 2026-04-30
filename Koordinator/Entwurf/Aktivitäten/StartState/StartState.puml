@@ -1,0 +1,8 @@
+@startuml
+start
+:Steuer Werte aus Konfig Datei lesen;
+:Registrierung beim Erlang-Node;
+:Registrierung beim Namensdienst;
+:In Init State wechseln;
+end
+@enduml

@@ -1,0 +1,7 @@
+@startuml
+title Step Befehl
+start
+note: Auslöse:\n Manuelle eingebabe des Befehls Step
+:Geht in den Zustand Bereit;
+end
+@enduml

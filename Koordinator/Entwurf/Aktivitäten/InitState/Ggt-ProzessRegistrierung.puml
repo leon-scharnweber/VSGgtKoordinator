@@ -1,0 +1,7 @@
+@startuml
+title Ggt-Prozess Registrierung
+start
+note: Auslöser:\n Sequenzdiagramm; Ggt-ProzessRegistrierung
+:Speichert Prozess mit seinem Namen als registriert ab;
+end
+@enduml
