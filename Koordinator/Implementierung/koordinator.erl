@@ -1,4 +1,5 @@
 -module(koordinator).
+  
 -author(leon).
 -compile([debug_info]).
 -export([start/0]).
@@ -46,9 +47,42 @@ init(Config, RegProzesse) ->
 			init(Config, RegProzesse);
 		{hello, GgtProzessName} ->
 			init(Config, [GgtProzessName|RegProzesse]);
-		{step} ->
-			bereit(Config)
+		step ->
+			bereit(Config);
+		kill ->
+			kill(Config, RegProzesse)
+
 	end.
+
+kill(Config, RegProzesse) ->
+	sendeKillAnAlleGgtProzesse(Config, RegProzesse),
+	#{dienstNodeName:= DienstNodeName} = Config,
+	#{koordinatorName := MeinName } = Config,
+	DienstNodeName ! {self(), {unbind, MeinName}},
+	unregister(MeinName).
+
+
+
+
+
+
+sendeKillAnAlleGgtProzesse(_Config, []) -> ok;
+sendeKillAnAlleGgtProzesse(Config, [ProzessName|Rest]) -> 
+	#{dienstNodeName:= DienstNodeName} = Config,
+	PID = bekommePIDFuerName(ProzessName, DienstNodeName),
+	PID ! kill,
+	sendeKillAnAlleGgtProzesse(Config, Rest).
+
+bekommePIDFuerName(ProzessName, DienstNodeName) ->
+	DienstNodeName ! {self(), {lookup, ProzessName}},
+
+	receive
+		{pin, {Name, Node}} ->
+			Node;
+		not_found ->
+			error
+	end.
+	
 
 %------------------------------------------------------------------------------
 
