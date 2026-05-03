@@ -65,7 +65,8 @@ kill(Config, RegProzesse) ->
 
 
 
-
+% versendet an alle registrierten Ggt Prozesse ein kill befehl, das sie sich beendne sollen
+% Die Ggt Prozesse müssen aber auch bein Namensdienst registriert sein
 sendeKillAnAlleGgtProzesse(_Config, []) -> ok;
 sendeKillAnAlleGgtProzesse(Config, [ProzessName|Rest]) -> 
 	#{dienstNodeName:= DienstNodeName} = Config,
