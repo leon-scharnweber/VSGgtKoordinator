@@ -8,27 +8,60 @@
 %------------------------------------------------------------------------------
 % Einstiegspunkt für den Koordinator, wo er sich beim Erlang-Node und beim Namensdienst registriert
 start() ->  Config = getConfig(),
-	    #{koordinatorName := MeinName } = Config,
+	    MeinName = getFromConfig(koordinatorName, Config),
 	    register(MeinName, self()),
-	    #{dienstNodeName:= DienstNodeName} = Config,
+	    DienstNodeName = getFromConfig(namensDienstNode, Config),
 	    registrierBeimNamensDienst(MeinName, DienstNodeName),
 	    init(Config, []).
 
 % Liest aus der Koordinator Config Datei alle Konfigurationraus und gibt sie als Map zurück
 getConfig() -> 
-	#{koordinatorName => koordinator,
-	 dienstNodeName => {namenDienst, namenDienstNode@adomayo1024},
-	 korrekturFlag => false,
-	 quote => 0.66,
-	 anzahlGgtProzesse => 10,
-	 arbeitsZeit => {10, 20},
-	 terminierungsZeit => 30}.
+	[koordinator,
+	 {namenDienst, namenDienstNode@adomayo1024},
+	 false,
+	 0.66,
+	 10,
+	 {10, 20},
+	 30].
 
+% Gibt für den Key den Value aus der Config zurück
+% Es gibt:
+% koordinatorName
+% namensDienstNode
+% korrekturFlag
+% quote
+% ggtProzessAnzahl
+% arbeitsZeit
+% terminierungsZeit
+getFromConfig(What, Config) -> 
+	case What of
+	    koordinatorName ->
+	        getByElement(0, Config);
+	    namensDienstNode->
+	        getByElement(1, Config);
+	    korrekturFlag ->
+	        getByElement(2, Config);
+	    quote ->
+	        getByElement(3, Config);
+	    ggtProzessAnzahl ->
+	        getByElement(4, Config);
+	    arbeitsZeit ->
+	        getByElement(5, Config);
+	    terminierungsZeit ->
+	        getByElement(6, Config);
+	    _ ->
+		error
+	end
+
+
+% Hilfutilfunktion um aus einer Liste ein element mit index herauszuholen
+getByElement(0, [H|_T]) -> H;
+getByElement(X, [_H,|T] when X > 0 -> getByElement(X-1, T);
+getByElement(X, []) when X > 0 ; X < 0 -> error.
 
 % Registriert den Koordinator beim Namensdienst
 registrierBeimNamensDienst(MeinName, DienstNodeName) ->
 	DienstNodeName ! {self(), {bind, MeinName, node()}}.
-
 
 %------------------------------------------------------------------------------
 
@@ -54,6 +87,9 @@ init(Config, RegProzesse) ->
 
 	end.
 
+% Wenn kill befehl gegeben wurde fährt der Koordinator das System runter, 
+% in dem er an alle Registrierten Ggt-Prozesse ein kill befehlt schickt
+% sich beim Namensdienst abmeldet und sich beim Erland-Node abmeldet
 kill(Config, RegProzesse) ->
 	sendeKillAnAlleGgtProzesse(Config, RegProzesse),
 	#{dienstNodeName:= DienstNodeName} = Config,
@@ -74,6 +110,7 @@ sendeKillAnAlleGgtProzesse(Config, [ProzessName|Rest]) ->
 	PID ! kill,
 	sendeKillAnAlleGgtProzesse(Config, Rest).
 
+% Holt sich beim Namensdienst die PID und node für einen bestimmten Namen
 bekommePIDFuerName(ProzessName, DienstNodeName) ->
 	DienstNodeName ! {self(), {lookup, ProzessName}},
 
