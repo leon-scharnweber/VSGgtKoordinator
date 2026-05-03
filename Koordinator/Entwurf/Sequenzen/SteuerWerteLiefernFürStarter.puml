@@ -1,0 +1,15 @@
+@startuml
+
+participant Koordinator as Koor
+participant Starter
+
+Koor --> Starter : {steeringval, {AZMin, AZMax}, TermZeit, GGTProzessAnz}
+note right 
+	AZMin = das Minumum an Arbeitszeit für die ggt-Prozesse
+	AZMax = das Maximum an Arbeitszeit für die ggt-Prozesse
+	TermZeit = die Zeit für die Terminierung
+	GGTProzessAnz = Die Anzahl an Prozessen die ein Starter starten soll
+end note
+
+@enduml
+

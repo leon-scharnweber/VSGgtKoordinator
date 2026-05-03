@@ -1,0 +1,11 @@
+@startuml
+
+participant Koordinator as Koor
+participant GgtProzess as Ggt
+
+Koor --> Ggt : {send, LCMi}
+note right 
+	LCMI = Der beseher kleinste bekannteste Mi des Koordinators	
+end note
+
+@enduml

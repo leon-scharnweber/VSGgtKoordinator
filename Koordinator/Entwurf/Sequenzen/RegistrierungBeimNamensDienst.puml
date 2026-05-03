@@ -1,0 +1,8 @@
+@startuml
+
+participant Koordinator as Koor
+participant NamensDienst as ND
+
+Koor --> ND : {<PID> , {bind, Name, node()}}
+
+@enduml

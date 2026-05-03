@@ -1,0 +1,11 @@
+@startuml
+title Kill Befehl
+
+start
+note: Auslöser:\n kill Befehl vom Benutzer
+:schicke an alle Ggt-Prozesse ein kill;
+:unregistrierung beim Namensdienst;
+:unregistrierung beim Erland-Node;
+end
+
+@enduml

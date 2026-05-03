@@ -1,0 +1,14 @@
+@startuml
+
+participant Koordinator as Koor
+participant GgtProzess as Ggt
+
+Koor --> Ggt : {sendy, InitMi}
+note right 
+	InitMi = Der InitialeMi den der Ggt-Prozess zum starten benutzen soll
+
+end note
+
+
+@enduml
+
