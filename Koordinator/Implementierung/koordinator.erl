@@ -51,12 +51,12 @@ getFromConfig(What, Config) ->
 	        getByElement(6, Config);
 	    _ ->
 		error
-	end
+	end.
 
 
 % Hilfutilfunktion um aus einer Liste ein element mit index herauszuholen
 getByElement(0, [H|_T]) -> H;
-getByElement(X, [_H,|T] when X > 0 -> getByElement(X-1, T);
+getByElement(X, [_H|T]) when X > 0 -> getByElement(X-1, T);
 getByElement(X, []) when X > 0 ; X < 0 -> error.
 
 % Registriert den Koordinator beim Namensdienst
@@ -81,7 +81,7 @@ init(Config, RegProzesse) ->
 		{hello, GgtProzessName} ->
 			init(Config, [GgtProzessName|RegProzesse]);
 		step ->
-			bereit(Config);
+			bereit(Config, RegProzesse, infinity);
 		kill ->
 			kill(Config, RegProzesse)
 
@@ -92,8 +92,8 @@ init(Config, RegProzesse) ->
 % sich beim Namensdienst abmeldet und sich beim Erland-Node abmeldet
 kill(Config, RegProzesse) ->
 	sendeKillAnAlleGgtProzesse(Config, RegProzesse),
-	#{dienstNodeName:= DienstNodeName} = Config,
-	#{koordinatorName := MeinName } = Config,
+	DienstNodeName = getFromConfig(namensDienstNode, Config),
+	MeinName = getFromConfig(koordinatorName, Config),
 	DienstNodeName ! {self(), {unbind, MeinName}},
 	unregister(MeinName).
 
@@ -105,7 +105,7 @@ kill(Config, RegProzesse) ->
 % Die Ggt Prozesse müssen aber auch bein Namensdienst registriert sein
 sendeKillAnAlleGgtProzesse(_Config, []) -> ok;
 sendeKillAnAlleGgtProzesse(Config, [ProzessName|Rest]) -> 
-	#{dienstNodeName:= DienstNodeName} = Config,
+	DienstNodeName = getFromConfig(namensDienstNode, Config),
 	PID = bekommePIDFuerName(ProzessName, DienstNodeName),
 	PID ! kill,
 	sendeKillAnAlleGgtProzesse(Config, Rest).
@@ -127,4 +127,32 @@ bekommePIDFuerName(ProzessName, DienstNodeName) ->
 % Bereit State
 %------------------------------------------------------------------------------
 
-bereit(Config) -> ok.
+bereit(Config, RegProzesse, LCMi) ->
+	
+	receive
+		{briefmi, {GgtProzessName, CMi, CZeit}} ->
+			io:format("~p: ~p: hat einen neuer CMi berechnet: ~p~n", [CZeit, GgtProzessName, CMi]),
+			case CMi < LCMi of
+			    true ->
+			        bereit(Config, RegProzesse, CMi);
+			    false ->
+			       bereit(Config, RegProzesse, LCMi) 
+			end;
+                {PID, briefterm, {GgtProzessName, CMi, CZeit}} ->
+			io:format("~p: ~p: hat eine Terminierung gesendet mit CMi: ~p~n", [CZeit, GgtProzessName, CMi]),
+			KorrekturFlag = getFromConfig(korrekturFlag, Config),
+			case KorrekturFlag andalso CMi < LCMi of
+			    true ->
+				PID ! {sendy, LCMi};
+			    false ->
+				ok
+			end;
+                {getinit, From} ->
+			InitMi = gibRandomMi(),
+                        From ! {sendy, InitMi}
+
+	end.
+
+
+gibRandomMi() ->
+	1.
