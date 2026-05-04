@@ -1,8 +1,8 @@
-{application, koordinatorC, [
+{application, koordinator, [
     {description, "An OTP application"},
     {vsn, "0.1.0"},
     {registered, []},
-    {mod, {koordinatorC_app, []}},
+    {mod, {koordinator_app, []}},
     {applications, [
         kernel,
         stdlib
@@ -11,4 +11,4 @@
     {modules, []},
     {licenses, ["Apache-2.0"]},
     {links, []}
- ]}.
+]}.
