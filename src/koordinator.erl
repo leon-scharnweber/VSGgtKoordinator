@@ -106,7 +106,7 @@ bereit(Config, RegProzesse, LCMi) ->
             From ! {sendy, InitMi},
             bereit(Config, RegProzesse, LCMi);
         {pongGGT, GgtName} ->
-            io:format("~p: is alive", []),
+            io:format("~p: is alive", [GgtName]),
             bereit(Config, RegProzesse, LCMi);
         nudge ->
             pingAlleProzesse(Config, RegProzesse),
