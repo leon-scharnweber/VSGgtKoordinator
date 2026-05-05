@@ -99,11 +99,49 @@ bereit(Config, RegProzesse, LCMi) ->
                     PID ! {sendy, LCMi};
                 false ->
                     ok
-            end;
+            end,
+            bereit(Config, RegProzesse, LCMi);
         {getinit, From} ->
             InitMi = gibRandomMi(),
-            From ! {sendy, InitMi}
+            From ! {sendy, InitMi},
+            bereit(Config, RegProzesse, LCMi);
+        {pongGGT, GgtName} ->
+            io:format("~p: is alive", []),
+            bereit(Config, RegProzesse, LCMi);
+        nudge ->
+            pingAlleProzesse(Config, RegProzesse),
+            bereit(Config, RegProzesse, LCMi);
+        prompt ->
+            getAllMi(Config, RegProzesse),
+            bereit(Config, RegProzesse, LCMi);
+        reset ->
+            sendeKillAnAlleGgtProzesse(Config, RegProzesse),
+            init(Config, RegProzesse);
+        kill ->
+            kill(Config, RegProzesse)
     end.
+
+pingAlleProzesse(_Config, []) ->
+    ok;
+pingAlleProzesse(Config, [ProzessName | Rest]) ->
+    DienstNodeName = utils:getFromConfig(namensDienstNode, Config),
+    PID = bekommePIDFuerName(ProzessName, DienstNodeName),
+    PID ! {self(), pingGGT},
+    pingAlleProzesse(Config, Rest).
+
+getAllMi(_Config, []) ->
+    ok;
+getAllMi(Config, [ProzessName | Rest]) ->
+    DienstNodeName = utils:getFromConfig(namensDienstNode, Config),
+    PID = bekommePIDFuerName(ProzessName, DienstNodeName),
+    PID ! {self(), tellmi},
+    receive
+        {mi, Mi} ->
+            io:format("~p: hat derzeit Mi vom ~p", [ProzessName, Mi])
+    after 5000 ->
+        io:format("~p: meldet keinen Mi", [ProzessName])
+    end,
+    getAllMi(Config, Rest).
 
 gibRandomMi() ->
     1.
