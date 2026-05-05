@@ -12,11 +12,15 @@ start_link() ->
 %------------------------------------------------------------------------------
 % Einstiegspunkt für den Koordinator, wo er sich beim Erlang-Node und beim Namensdienst registriert
 start() ->
+    io:format("forder config an~n"),
     Config = utils:getConfig(),
+    io:format("config bekomme~n"),
     MeinName = utils:getFromConfig(koordinatorName, Config),
     register(MeinName, self()),
+    io:format("Beim Erlang-Node registriert mit dem Namen: ~p~n", [MeinName]),
     DienstNodeName = utils:getFromConfig(namensDienstNode, Config),
     registrierBeimNamensDienst(MeinName, DienstNodeName),
+    io:format("Beim NamensDienst registriert"),
     init(Config, []).
 
 % Registriert den Koordinator beim Namensdienst
@@ -30,16 +34,21 @@ registrierBeimNamensDienst(MeinName, DienstNodeName) ->
 init(Config, RegProzesse) ->
     receive
         {From, getsteeringval} ->
+            io:format("Ein Anfrage nach den Steuerweten für die Ggt-Prozesse von: ~p~n", [From]),
             ArbeitsZeit = utils:getFromConfig(arbeitsZeit, Config),
             TerminierungsZeit = utils:getFromConfig(terminierungsZeit, Config),
             AnzahlGgtProzesse = utils:getFromConfig(ggtProzessAnzahl, Config),
             From ! {steeringval, ArbeitsZeit, TerminierungsZeit, AnzahlGgtProzesse},
+            io:format("Steuerwerte gesendet an: ~p~n", [From]),
             init(Config, RegProzesse);
         {hello, GgtProzessName} ->
+            io:format("Neuer Ggt-Prozess registriert: ~p~n", [GgtProzessName]),
             init(Config, [GgtProzessName | RegProzesse]);
         step ->
+            io:format("Step Befehl erhalten und wechsel in den Bereit State"),
             bereit(Config, RegProzesse, infinity);
         kill ->
+            io:format("Kill Befehl erhalten"),
             kill(Config, RegProzesse)
     end.
 
@@ -61,14 +70,16 @@ sendeKillAnAlleGgtProzesse(Config, [ProzessName | Rest]) ->
     DienstNodeName = utils:getFromConfig(namensDienstNode, Config),
     PID = bekommePIDFuerName(ProzessName, DienstNodeName),
     PID ! kill,
+    io:format("Kill Befehl gesendet an: ~p~n", [ProzessName]),
     sendeKillAnAlleGgtProzesse(Config, Rest).
 
 % Holt sich beim Namensdienst die PID und node für einen bestimmten Namen
 bekommePIDFuerName(ProzessName, DienstNodeName) ->
     DienstNodeName ! {self(), {lookup, ProzessName}},
-
+    io:format("Frage namensdienst an für den Namen: ~p~n", [ProzessName]),
     receive
         {pin, {_ProzessName, Node}} ->
+            io:format("PID (~p) bekommen fuer: ~p~n", [Node, ProzessName]),
             Node;
         not_found ->
             error
@@ -96,6 +107,7 @@ bereit(Config, RegProzesse, LCMi) ->
             KorrekturFlag = utils:getFromConfig(korrekturFlag, Config),
             case KorrekturFlag andalso CMi < LCMi of
                 true ->
+                    io:format("Korrektur Falg gesetz"),
                     PID ! {sendy, LCMi};
                 false ->
                     ok
