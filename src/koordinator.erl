@@ -4,6 +4,14 @@
 -compile([debug_info]).
 -export([start/0]).
 
+-define(KOORDINATOR_NAME, 0).
+-define(NAMENSDIENST, 1).
+-define(KOOREKTUR_FLAG, 2).
+-define(QUOTE, 3).
+-define(ANZAHL_GGT, 4).
+-define(ARBEITSZEIT, 5).
+-define(TERMINIERUNGSZEIT, 6).
+
 % Start State
 %------------------------------------------------------------------------------
 % Einstiegspunkt für den Koordinator, wo er sich beim Erlang-Node und beim Namensdienst registriert
@@ -39,19 +47,19 @@ getConfig() ->
 getFromConfig(What, Config) ->
     case What of
         koordinatorName ->
-            getByElement(0, Config);
+            getByElement(?KOORDINATOR_NAME, Config);
         namensDienstNode ->
-            getByElement(1, Config);
+            getByElement(?NAMENSDIENST, Config);
         korrekturFlag ->
-            getByElement(2, Config);
+            getByElement(?KOOREKTUR_FLAG, Config);
         quote ->
-            getByElement(3, Config);
+            getByElement(?QUOTE, Config);
         ggtProzessAnzahl ->
-            getByElement(4, Config);
+            getByElement(?ANZAHL_GGT, Config);
         arbeitsZeit ->
-            getByElement(5, Config);
+            getByElement(?ARBEITSZEIT, Config);
         terminierungsZeit ->
-            getByElement(6, Config);
+            getByElement(?TERMINIERUNGSZEIT, Config);
         _ ->
             error
     end.
