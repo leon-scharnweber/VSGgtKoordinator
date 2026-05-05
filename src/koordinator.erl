@@ -2,7 +2,7 @@
 
 -author(leon).
 -compile([debug_info]).
--export([start/0]).
+-export([start_link/0, start/0]).
 
 -define(KOORDINATOR_NAME, 0).
 -define(NAMENSDIENST, 1).
@@ -11,6 +11,10 @@
 -define(ANZAHL_GGT, 4).
 -define(ARBEITSZEIT, 5).
 -define(TERMINIERUNGSZEIT, 6).
+
+start_link() ->
+    Pid = spawn_link(?MODULE, start, []),
+    {ok, Pid}.
 
 % Start State
 %------------------------------------------------------------------------------
@@ -80,11 +84,9 @@ registrierBeimNamensDienst(MeinName, DienstNodeName) ->
 init(Config, RegProzesse) ->
     receive
         {From, getsteeringval} ->
-            #{
-                anzahlGgtProzesse := AnzahlGgtProzesse,
-                arbeitsZeit := ArbeitsZeit,
-                terminierungsZeit := TerminierungsZeit
-            } = Config,
+            ArbeitsZeit = getFromConfig(arbeitsZeit, Config),
+            TerminierungsZeit = getFromConfig(terminierungsZeit, Config),
+            AnzahlGgtProzesse = getFromConfig(ggtProzessAnzahl, Config),
             From ! {steeringval, ArbeitsZeit, TerminierungsZeit, AnzahlGgtProzesse},
             init(Config, RegProzesse);
         {hello, GgtProzessName} ->
@@ -120,7 +122,7 @@ bekommePIDFuerName(ProzessName, DienstNodeName) ->
     DienstNodeName ! {self(), {lookup, ProzessName}},
 
     receive
-        {pin, {Name, Node}} ->
+        {pin, {_ProzessName, Node}} ->
             Node;
         not_found ->
             error

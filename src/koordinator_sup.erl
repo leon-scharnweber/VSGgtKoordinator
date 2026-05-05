@@ -32,15 +32,15 @@ init([]) ->
         period => 1
     },
     ChildSpecs = [
-                  #{
-                    id => koordinator,
-                    start => {koordinator, start, []},
-                    restart => permanent,
-                    shutdown => 5000,
-                    type => worker,
-                    modules => [koordinator]
-                   }
-                 ],
+        #{
+            id => koordinator,
+            start => {koordinator, start_link, []},
+            restart => permanent,
+            shutdown => 5000,
+            type => worker,
+            modules => [koordinator]
+        }
+    ],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
