@@ -2,4 +2,4 @@
 
 **Prompt Befehl**
 
-Der Koordinator kann durch einen Befehl alle derzeitgen von den ggt-Prozessen anzeigen
+Der Koordinator kann durch einen Befehl alle derzeitgen Mi von den ggt-Prozessen anzeigen
