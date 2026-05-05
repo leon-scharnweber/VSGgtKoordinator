@@ -31,7 +31,16 @@ init([]) ->
         intensity => 0,
         period => 1
     },
-    ChildSpecs = [],
+    ChildSpecs = [
+                  #{
+                    id => koordinator,
+                    start => {koordinator, start, []},
+                    restart => permanent,
+                    shutdown => 5000,
+                    type => worker,
+                    modules => [koordinator]
+                   }
+                 ],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
