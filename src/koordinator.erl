@@ -45,7 +45,7 @@ init(Config, RegProzesse) ->
             io:format("Neuer Ggt-Prozess registriert: ~p~n", [GgtProzessName]),
             init(Config, [GgtProzessName | RegProzesse]);
         step ->
-            io:format("Step Befehl erhalten und wechsel in den Bereit State"),
+            io:format("Step Befehl erhalten und wechsel in den Bereit State~n"),
             bereit(Config, RegProzesse, infinity);
         kill ->
             io:format("Kill Befehl erhalten"),
