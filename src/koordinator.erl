@@ -4,14 +4,6 @@
 -compile([debug_info]).
 -export([start_link/0, start/0]).
 
--define(KOORDINATOR_NAME, 0).
--define(NAMENSDIENST, 1).
--define(KOOREKTUR_FLAG, 2).
--define(QUOTE, 3).
--define(ANZAHL_GGT, 4).
--define(ARBEITSZEIT, 5).
--define(TERMINIERUNGSZEIT, 6).
-
 start_link() ->
     Pid = spawn_link(?MODULE, start, []),
     {ok, Pid}.
@@ -20,58 +12,12 @@ start_link() ->
 %------------------------------------------------------------------------------
 % Einstiegspunkt für den Koordinator, wo er sich beim Erlang-Node und beim Namensdienst registriert
 start() ->
-    Config = getConfig(),
-    MeinName = getFromConfig(koordinatorName, Config),
+    Config = utils:getConfig(),
+    MeinName = utils:getFromConfig(koordinatorName, Config),
     register(MeinName, self()),
-    DienstNodeName = getFromConfig(namensDienstNode, Config),
+    DienstNodeName = utils:getFromConfig(namensDienstNode, Config),
     registrierBeimNamensDienst(MeinName, DienstNodeName),
     init(Config, []).
-
-% Liest aus der Koordinator Config Datei alle Konfigurationraus und gibt sie als Map zurück
-getConfig() ->
-    [
-        koordinator,
-        {namenDienst, namenDienstNode@adomayo1024},
-        false,
-        0.66,
-        10,
-        {10, 20},
-        30
-    ].
-
-% Gibt für den Key den Value aus der Config zurück
-% Es gibt:
-% koordinatorName
-% namensDienstNode
-% korrekturFlag
-% quote
-% ggtProzessAnzahl
-% arbeitsZeit
-% terminierungsZeit
-getFromConfig(What, Config) ->
-    case What of
-        koordinatorName ->
-            getByElement(?KOORDINATOR_NAME, Config);
-        namensDienstNode ->
-            getByElement(?NAMENSDIENST, Config);
-        korrekturFlag ->
-            getByElement(?KOOREKTUR_FLAG, Config);
-        quote ->
-            getByElement(?QUOTE, Config);
-        ggtProzessAnzahl ->
-            getByElement(?ANZAHL_GGT, Config);
-        arbeitsZeit ->
-            getByElement(?ARBEITSZEIT, Config);
-        terminierungsZeit ->
-            getByElement(?TERMINIERUNGSZEIT, Config);
-        _ ->
-            error
-    end.
-
-% Hilfutilfunktion um aus einer Liste ein element mit index herauszuholen
-getByElement(0, [H | _T]) -> H;
-getByElement(X, [_H | T]) when X > 0 -> getByElement(X - 1, T);
-getByElement(X, []) when X > 0; X < 0 -> error.
 
 % Registriert den Koordinator beim Namensdienst
 registrierBeimNamensDienst(MeinName, DienstNodeName) ->
@@ -84,9 +30,9 @@ registrierBeimNamensDienst(MeinName, DienstNodeName) ->
 init(Config, RegProzesse) ->
     receive
         {From, getsteeringval} ->
-            ArbeitsZeit = getFromConfig(arbeitsZeit, Config),
-            TerminierungsZeit = getFromConfig(terminierungsZeit, Config),
-            AnzahlGgtProzesse = getFromConfig(ggtProzessAnzahl, Config),
+            ArbeitsZeit = utils:getFromConfig(arbeitsZeit, Config),
+            TerminierungsZeit = utils:getFromConfig(terminierungsZeit, Config),
+            AnzahlGgtProzesse = utils:getFromConfig(ggtProzessAnzahl, Config),
             From ! {steeringval, ArbeitsZeit, TerminierungsZeit, AnzahlGgtProzesse},
             init(Config, RegProzesse);
         {hello, GgtProzessName} ->
@@ -102,8 +48,8 @@ init(Config, RegProzesse) ->
 % sich beim Namensdienst abmeldet und sich beim Erland-Node abmeldet
 kill(Config, RegProzesse) ->
     sendeKillAnAlleGgtProzesse(Config, RegProzesse),
-    DienstNodeName = getFromConfig(namensDienstNode, Config),
-    MeinName = getFromConfig(koordinatorName, Config),
+    DienstNodeName = utils:getFromConfig(namensDienstNode, Config),
+    MeinName = utils:getFromConfig(koordinatorName, Config),
     DienstNodeName ! {self(), {unbind, MeinName}},
     unregister(MeinName).
 
@@ -112,7 +58,7 @@ kill(Config, RegProzesse) ->
 sendeKillAnAlleGgtProzesse(_Config, []) ->
     ok;
 sendeKillAnAlleGgtProzesse(Config, [ProzessName | Rest]) ->
-    DienstNodeName = getFromConfig(namensDienstNode, Config),
+    DienstNodeName = utils:getFromConfig(namensDienstNode, Config),
     PID = bekommePIDFuerName(ProzessName, DienstNodeName),
     PID ! kill,
     sendeKillAnAlleGgtProzesse(Config, Rest).
@@ -147,7 +93,7 @@ bereit(Config, RegProzesse, LCMi) ->
             io:format("~p: ~p: hat eine Terminierung gesendet mit CMi: ~p~n", [
                 CZeit, GgtProzessName, CMi
             ]),
-            KorrekturFlag = getFromConfig(korrekturFlag, Config),
+            KorrekturFlag = utils:getFromConfig(korrekturFlag, Config),
             case KorrekturFlag andalso CMi < LCMi of
                 true ->
                     PID ! {sendy, LCMi};
