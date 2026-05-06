@@ -76,7 +76,9 @@ sendeKillAnAlleGgtProzesse(Config, [ProzessName | Rest]) ->
 % Holt sich beim Namensdienst die PID und node für einen bestimmten Namen
 bekommePIDFuerName(ProzessName, DienstNodeName) ->
     DienstNodeName ! {self(), {lookup, ProzessName}},
+
     io:format("Frage namensdienst an für den Namen: ~p~n", [ProzessName]),
+
     receive
         {pin, {_ProzessName, Node}} ->
             io:format("PID (~p) bekommen fuer: ~p~n", [Node, ProzessName]),
